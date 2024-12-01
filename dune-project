@@ -7,5 +7,6 @@
     cohttp-lwt-unix
     lwt_ssl
     ppx_expect
+    core
   )
 )
