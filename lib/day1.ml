@@ -1,5 +1,7 @@
 open! Imports
 
+module IntMap = Map.Make(Int)
+
 module M = struct
   (* Type to parse the input into *)
   type t = (int * int) list
@@ -26,7 +28,7 @@ module M = struct
     let left, right = unzip numbers in
     (List.sort compare left, List.sort compare right)
 
-  let count_occurences value lst =
+  let count_occurrences value lst =
     List.fold_left (fun acc x -> if x = value then acc + 1 else acc) 0 lst
 
   (* Run part 1 with parsed inputs *)
@@ -42,10 +44,20 @@ module M = struct
 
   (* Run part 2 with parsed inputs *)
   let part2 numbers =
+    let memo = ref IntMap.empty in
+
     let rec aux acc = function
       | [], _ -> acc
-      | a::l, r -> aux (acc + (count_occurences a r) * a) (l, r)
-
+      | a::l, r ->
+        let count =
+          match IntMap.find_opt a !memo with (* check if we have already counted a *)
+          | Some count -> count
+          | None -> (* not present in memo, calcualte and save it *)
+            let count = count_occurrences a r in
+            memo := IntMap.add a count !memo;
+            count
+        in
+        aux (acc + count * a) (l, r) (* sum product of count of a in r and a *)
     in
     let left, right = unzip numbers in
     aux 0 (left, right) |> Printf.printf "%d\n"
